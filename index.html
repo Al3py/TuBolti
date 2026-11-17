@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="Control personal de jornadas, viajes, combustible y rentabilidad de Bolt.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>Bolt Driver Tracker</title>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark">B</div><div><strong>Bolt Driver Tracker</strong><small>Control de rentabilidad</small></div></div>
+    <button id="installBtn" class="icon-btn" hidden aria-label="Instalar aplicación">＋ Instalar</button>
+  </header>
+
+  <main>
+    <section class="page active" id="page-dashboard">
+      <div class="page-heading"><div><p class="eyebrow">RESUMEN</p><h1>Tu actividad</h1><p class="muted" id="todayLabel"></p></div><span class="pill offline">● Datos locales</span></div>
+      <div class="hero-card">
+        <div class="hero-top"><span>Ganancia operativa acumulada · este mes</span><span class="hero-icon">↗</span></div>
+        <div class="hero-value" id="monthProfit">G. 0</div>
+        <div class="hero-foot"><span id="monthSessions">0 jornadas</span><span id="monthKm">0 km</span></div>
+      </div>
+      <div class="stats-grid">
+        <article class="stat-card"><span>Facturación bruta</span><strong id="monthGross">G. 0</strong><small>Incluye todos los viajes</small></article>
+        <article class="stat-card"><span>Comisión estimada</span><strong id="monthCommission">G. 0</strong><small id="commissionRateLabel">23% configurable</small></article>
+        <article class="stat-card"><span>Combustible</span><strong id="monthFuel">G. 0</strong><small>Gastos registrados</small></article>
+        <article class="stat-card"><span>Viajes</span><strong id="monthTrips">0</strong><small>Este mes</small></article>
+      </div>
+      <div class="section-title"><h2>Fondos disponibles</h2><button class="text-btn" data-go="funds">Administrar</button></div>
+      <div id="fundCards" class="fund-grid"></div>
+      <div class="section-title"><h2>Últimas jornadas</h2><button class="text-btn" data-go="sessions">Ver todas</button></div>
+      <div id="recentSessions" class="list-card empty">Todavía no hay jornadas registradas.</div>
+    </section>
+
+    <section class="page" id="page-sessions">
+      <div class="page-heading"><div><p class="eyebrow">REGISTRO</p><h1>Jornadas</h1><p class="muted">Registrá el resumen o el detalle de tus viajes.</p></div></div>
+      <form id="sessionForm" class="form-card">
+        <h2>Nueva jornada</h2>
+        <div class="form-grid">
+          <label>Fecha<input type="date" id="sDate" required></label>
+          <label>Hora de inicio<input type="time" id="sStart"></label>
+          <label>Hora de fin<input type="time" id="sEnd"></label>
+          <label>Odómetro inicial (km)<input type="number" id="sOdoStart" min="0" step="0.1" placeholder="Ej. 34000"></label>
+          <label>Odómetro final (km)<input type="number" id="sOdoEnd" min="0" step="0.1" placeholder="Se completa al terminar"></label>
+          <label>Bonificaciones (Gs.)<input type="number" id="sBonus" min="0" step="1" value="0"></label>
+          <label>Propinas (Gs.)<input type="number" id="sTips" min="0" step="1" value="0"></label>
+          <label>Combustible atribuible a esta jornada (Gs.)<input type="number" id="sFuelCost" min="0" step="1" value="0"></label>
+          <label>Otros costos de la jornada (Gs.)<input type="number" id="sOther" min="0" step="1" value="0"></label>
+        </div>
+        <div class="notice">Si cargás viajes individuales, la facturación y los métodos de pago se calculan desde esos viajes. Si no, podés ingresar los totales manualmente más abajo.</div>
+        <div class="form-grid">
+          <label>Facturación manual (Gs.)<input type="number" id="sGross" min="0" step="1" value="0"></label>
+          <label>Viajes manuales<input type="number" id="sTripCount" min="0" step="1" value="0"></label>
+          <label>Efectivo (Gs.)<input type="number" id="sCash" min="0" step="1" value="0"></label>
+          <label>Tarjeta / app (Gs.)<input type="number" id="sCard" min="0" step="1" value="0"></label>
+        </div>
+        <label class="checkline"><input type="checkbox" id="sCommissionOverride"> Ingresar comisión real manualmente</label>
+        <label>Comisión real (Gs.)<input type="number" id="sCommission" min="0" step="1" value="0" disabled></label>
+        <button class="primary-btn" type="submit">Guardar jornada</button>
+      </form>
+      <div class="section-title"><h2>Historial</h2><span class="muted" id="sessionCount">0 registros</span></div>
+      <div id="sessionList" class="list-card empty">Todavía no hay jornadas registradas.</div>
+    </section>
+
+    <section class="page" id="page-trips">
+      <div class="page-heading"><div><p class="eyebrow">DETALLE</p><h1>Viajes</h1><p class="muted">Cargá cada viaje y su forma de cobro.</p></div></div>
+      <form id="tripForm" class="form-card">
+        <h2>Agregar viaje</h2>
+        <label>Jornada<select id="tripSession" required></select></label>
+        <div class="form-grid">
+          <label>Fecha y hora<input type="datetime-local" id="tripDate" required></label>
+          <label>Importe del viaje (Gs.)<input type="number" id="tripFare" min="0" step="1" required></label>
+          <label>Método de pago<select id="tripPayment"><option value="cash">Efectivo</option><option value="card">Tarjeta / app</option></select></label>
+          <label>Propina (Gs.)<input type="number" id="tripTip" min="0" step="1" value="0"></label>
+        </div>
+        <label>Nota (opcional)<input id="tripNote" maxlength="120" placeholder="Ej. viaje al centro"></label>
+        <button class="primary-btn" type="submit">Guardar viaje</button>
+      </form>
+      <div class="section-title"><h2>Viajes registrados</h2><span class="muted" id="tripCount">0 viajes</span></div>
+      <div id="tripList" class="list-card empty">Todavía no hay viajes registrados.</div>
+    </section>
+
+    <section class="page" id="page-fuel">
+      <div class="page-heading"><div><p class="eyebrow">VEHÍCULO</p><h1>Combustible</h1><p class="muted">Registrá cargas y controlá el costo real.</p></div></div>
+      <form id="fuelForm" class="form-card">
+        <h2>Nueva carga</h2>
+        <div class="form-grid">
+          <label>Fecha<input type="date" id="fDate" required></label>
+          <label>Odómetro (km)<input type="number" id="fOdo" min="0" step="0.1" required></label>
+          <label>Litros<input type="number" id="fLiters" min="0.01" step="0.01" required></label>
+          <label>Precio por litro (Gs.)<input type="number" id="fPrice" min="0" step="1" required></label>
+          <label>Tipo de combustible<input id="fType" value="Nafta" maxlength="40"></label>
+          <label>Estación<input id="fStation" placeholder="Ej. Enex / Petropar"></label>
+        </div>
+        <label class="checkline"><input type="checkbox" id="fFull"> Carga con tanque lleno</label>
+        <button class="primary-btn" type="submit">Guardar carga</button>
+      </form>
+      <div class="stats-grid compact">
+        <article class="stat-card"><span>Litros registrados</span><strong id="fuelLiters">0 L</strong></article>
+        <article class="stat-card"><span>Gasto registrado</span><strong id="fuelTotal">G. 0</strong></article>
+      </div>
+      <div class="section-title"><h2>Historial de cargas</h2></div>
+      <div id="fuelList" class="list-card empty">Todavía no hay cargas registradas.</div>
+      <div class="notice">Para calcular km/l de forma confiable, registrá cargas consecutivas con tanque lleno y el odómetro de cada carga. Las cargas parciales quedan guardadas, pero no se usan solas para estimar consumo.</div>
+    </section>
+
+    <section class="page" id="page-funds">
+      <div class="page-heading"><div><p class="eyebrow">DINERO</p><h1>Fondos y distribución</h1><p class="muted">Asigná la ganancia a tus prioridades.</p></div></div>
+      <div class="form-card">
+        <h2>Porcentajes de distribución</h2>
+        <p class="muted small">La suma debe ser exactamente 100%. Se aplica a la ganancia operativa positiva de cada jornada.</p>
+        <form id="allocationForm">
+          <div id="allocationInputs" class="allocation-inputs"></div>
+          <div class="allocation-total"><span>Total</span><strong id="allocationTotal">100%</strong></div>
+          <button class="primary-btn" type="submit">Guardar porcentajes</button>
+        </form>
+      </div>
+      <div class="section-title"><h2>Saldos por fondo</h2></div>
+      <div id="fundList" class="fund-list"></div>
+      <form id="expenseForm" class="form-card">
+        <h2>Registrar gasto desde un fondo</h2>
+        <label>Fondo<select id="expenseFund"></select></label>
+        <div class="form-grid">
+          <label>Fecha<input type="date" id="eDate" required></label>
+          <label>Importe (Gs.)<input type="number" id="eAmount" min="1" step="1" required></label>
+        </div>
+        <label>Categoría<select id="eCategory"><option>Purina / mascotas</option><option>Farmacia</option><option>Hogar</option><option>Vehículo</option><option>Personal</option><option>Otro</option></select></label>
+        <label>Descripción<input id="eDescription" maxlength="120" placeholder="Detalle del gasto"></label>
+        <button class="primary-btn" type="submit">Registrar gasto</button>
+      </form>
+      <div class="section-title"><h2>Movimientos</h2></div>
+      <div id="movementList" class="list-card empty">Todavía no hay movimientos.</div>
+    </section>
+
+    <section class="page" id="page-settings">
+      <div class="page-heading"><div><p class="eyebrow">CONFIGURACIÓN</p><h1>Preferencias</h1><p class="muted">Ajustá los parámetros de cálculo.</p></div></div>
+      <form id="settingsForm" class="form-card">
+        <h2>Parámetros generales</h2>
+        <label>Comisión Bolt (%)<input type="number" id="setCommission" min="0" max="100" step="0.1" required></label>
+        <label>Reserva de mantenimiento por km (Gs.)<input type="number" id="setMaintenance" min="0" step="1" required></label>
+        <label>Nombre del vehículo<input id="setVehicle" maxlength="60"></label>
+        <button class="primary-btn" type="submit">Guardar configuración</button>
+      </form>
+      <div class="form-card">
+        <h2>Respaldo de datos</h2>
+        <p class="muted small">Tus registros se guardan en este dispositivo. Exportá una copia periódicamente, especialmente antes de cambiar de teléfono o borrar los datos del navegador.</p>
+        <div class="button-row"><button id="exportJson" class="secondary-btn">Exportar respaldo JSON</button><button id="exportCsv" class="secondary-btn">Exportar jornadas CSV</button></div>
+        <label class="file-label">Restaurar respaldo JSON<input type="file" id="importJson" accept="application/json"></label>
+        <button id="clearData" class="danger-btn">Borrar todos los datos</button>
+        <p class="tiny muted">Versión MVP 0.1 · Almacenamiento local · No afiliado a Bolt</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Navegación principal">
+    <button class="nav-item active" data-page="dashboard"><span>⌂</span><small>Inicio</small></button>
+    <button class="nav-item" data-page="sessions"><span>＋</span><small>Jornadas</small></button>
+    <button class="nav-item" data-page="trips"><span>↗</span><small>Viajes</small></button>
+    <button class="nav-item" data-page="fuel"><span>⛽</span><small>Combustible</small></button>
+    <button class="nav-item" data-page="funds"><span>◉</span><small>Fondos</small></button>
+    <button class="nav-item" data-page="settings"><span>⚙</span><small>Más</small></button>
+  </nav>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
