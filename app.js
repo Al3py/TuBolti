@@ -1,6 +1,6 @@
 const DB_NAME="bolt-driver-tracker", DB_VERSION=1;
 const stores=["sessions","trips","fuel","expenses","movements","settings"];
-const defaultSettings={commissionRate:23,maintenancePerKm:400,vehicle:"Nissan Kicks 2024",allocations:{fuel:25,maintenance:15,personal:35,savings:20,reinvestment:5}};
+const defaultSettings={commissionRate:24,maintenancePerKm:400,vehicle:"",allocations:{fuel:40,maintenance:15,personal:20,savings:20,reinvestment:5}};
 const fundNames={fuel:"Combustible",maintenance:"Mantenimiento",personal:"Gastos personales",savings:"Ahorro",reinvestment:"Reinversión"};
 let db, settings={...defaultSettings}, deferredInstall=null;
 const $=id=>document.getElementById(id);
