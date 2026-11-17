@@ -1,6 +1,6 @@
 {
-  "name": "Bolt Driver Tracker",
-  "short_name": "Bolt Tracker",
+  "name": "Tu BolTi",
+  "short_name": "Tu Bolti",
   "description": "Control personal de rentabilidad de viajes, combustible y fondos.",
   "start_url": "./",
   "scope": "./",
