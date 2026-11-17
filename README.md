@@ -1,4 +1,4 @@
-# Bolt Driver Tracker — MVP 0.1
+# Tu Bolti — MVP 0.1
 
 Aplicación PWA personal para registrar jornadas, viajes, combustible y distribución de ganancias.
 
